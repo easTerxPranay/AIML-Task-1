@@ -1,1 +1,48 @@
+import pandas as pd 
 
+print(df.info())
+print(df.isnull().sum())
+# Columns with missing values
+print(df.isnull().sum())
+
+# Fill 'Age' with median (numerical)
+df['Age'].fillna(df['Age'].median(), inplace=True)
+
+# Fill 'Cabin' with a placeholder value (e.g., 'Unknown') since it's categorical
+df['Cabin'].fillna('Unknown', inplace=True)
+
+# Fill 'Embarked_Q' and 'Embarked_S' with 0 (assuming they are one-hot encoded columns)
+df['Embarked_Q'].fillna(0, inplace=True)
+df['Embarked_S'].fillna(0, inplace=True)
+
+df = pd.get_dummies(df, columns=['Pclass', 'Cabin'], drop_first=True)
+
+from sklearn.preprocessing import StandardScaler
+
+# Select numerical columns
+numerical_cols = ['Age', 'Fare']
+
+# Initialize scaler
+scaler = StandardScaler()
+
+# Apply scaling
+df[numerical_cols] = scaler.fit_transform(df[numerical_cols])
+
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+# Boxplot to visualize outliers
+sns.boxplot(x=df['Fare'])
+plt.title('Boxplot of Fare')
+plt.show()
+
+# Remove outliers using IQR
+Q1 = df['Fare'].quantile(0.25)
+Q3 = df['Fare'].quantile(0.75)
+IQR = Q3 - Q1
+
+# Filtering out the outliers
+df = df[(df['Fare'] >= Q1 - 1.5 * IQR) & (df['Fare'] <= Q3 + 1.5 * IQR)]
+
+print("Final dataset shape:", df.shape)
+print(df.head())
